@@ -1,5 +1,8 @@
 package planningEntryCollection;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -7,6 +10,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import exceptions.*;
 import location.*;
 import planningEntry.*;
 import resource.*;
@@ -14,17 +18,21 @@ import timeSlot.*;
 
 public class FlightScheduleCollection extends PlanningEntryCollection {
     @Override
-    public FlightSchedule<Resource> addPlanningEntry(String stringInfo) {
+    public FlightSchedule<Resource> addPlanningEntry(String stringInfo) throws Exception {
         Pattern pattern = Pattern.compile(
                 "Flight:(.*?),(.*?)\n\\{\nDepartureAirport:(.*?)\nArrivalAirport:(.*?)\nDepatureTime:(.*?)\nArrivalTime:(.*?)\nPlane:(.*?)\n\\{\nType:(.*?)\nSeats:(.*?)\nAge:(.*?)\n\\}\n\\}\n");
         Matcher matcher = pattern.matcher(stringInfo);
-        if (!matcher.find())
-            return null;
+        if (!matcher.find()) {
+            throw new DataPatternException("Data: " + stringInfo + " mismatch Pattern.");
+        }
         String planningEntryNumber = matcher.group(2);
+        checkEntryNumber(planningEntryNumber);
         String departureAirport = matcher.group(3);
         String arrivalAirport = matcher.group(4);
+        checkDiffAirport(departureAirport, arrivalAirport);
         String departureTime = matcher.group(5);
         String arrivalTime = matcher.group(6);
+        checkTime(departureTime, arrivalTime);
         return this.addPlanningEntry(planningEntryNumber, departureAirport, arrivalAirport, departureTime, arrivalTime);
     }
 
@@ -50,7 +58,7 @@ public class FlightScheduleCollection extends PlanningEntryCollection {
     }
 
     @Override
-    public Resource allocatePlanningEntry(String planningEntryNumber, String stringInfo) {
+    public Resource allocatePlanningEntry(String planningEntryNumber, String stringInfo) throws Exception {
         if (this.getPlanningEntryByStrNumber(planningEntryNumber) == null)
             return null;
         Pattern pattern1 = Pattern.compile(
@@ -63,10 +71,15 @@ public class FlightScheduleCollection extends PlanningEntryCollection {
                 return null;
         }
         String number = matcher.group(7);
+        checkPlaneNumber(number);
         String strType = matcher.group(8);
-        int intSeats = Integer.valueOf(matcher.group(9));
-        double age = Double.valueOf(matcher.group(10));
-        return this.allocateResource(planningEntryNumber, number, strType, intSeats, age);
+        checkPlaneType(strType);
+        String strSeats = matcher.group(9);
+        checkPlaneSeat(strSeats);
+        String strAge = matcher.group(10);
+        checkPlaneAge(strAge);
+        return this.allocateResource(planningEntryNumber, number, strType, Integer.valueOf(strSeats),
+                Double.valueOf(strAge));
     }
 
     /**
@@ -122,5 +135,106 @@ public class FlightScheduleCollection extends PlanningEntryCollection {
             }
         };
         Collections.sort(planningEntries, comparator);
+    }
+
+    /**
+     * check entry number
+     * @param planningEntryNumber
+     * @throws EntryNumberFormatException
+     */
+    public static void checkEntryNumber(String planningEntryNumber) throws EntryNumberFormatException {
+        if (Character.isUpperCase(planningEntryNumber.charAt(0))
+                && Character.isUpperCase(planningEntryNumber.charAt(1))) {
+            for (int i = 2; i < planningEntryNumber.length(); i++) {
+                if (!Character.isDigit(planningEntryNumber.charAt(i)))
+                    throw new EntryNumberFormatException(planningEntryNumber + " has incorrect format.");
+            }
+        } else
+            throw new EntryNumberFormatException(planningEntryNumber + " has incorrect format.");
+    }
+
+    /**
+     * check airports are different
+     * @param departureAirport
+     * @param arrivalAirport
+     * @throws SameAirportException
+     */
+    public static void checkDiffAirport(String departureAirport, String arrivalAirport) throws SameAirportException {
+        if (!departureAirport.equals(arrivalAirport))
+            throw new SameAirportException(departureAirport + " is the same with " + arrivalAirport + " .");
+    }
+
+    /**
+     * check time format and departure is before arrival
+     * @param departureTime
+     * @param arrivalTime
+     * @throws TimeOrderException
+     * @throws DateTimeParseException
+     */
+    public static void checkTime(String departureTime, String arrivalTime)
+            throws TimeOrderException, DateTimeParseException {
+        LocalDateTime dt = null, at = null;
+        try {
+            dt = LocalDateTime.parse(departureTime, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+            at = LocalDateTime.parse(arrivalTime, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        } catch (Exception e) {
+            throw new DateTimeParseException("The date time is not matched.", departureTime + arrivalTime, 0);
+        } finally {
+            if (dt != null && at != null) {
+                if (!dt.isBefore(at))
+                    throw new TimeOrderException(
+                            "Departure time " + departureTime + " is not before arrival time " + arrivalTime + " .");
+            }
+        }
+    }
+
+    /**
+     * check plane number
+     * @param planeNumber
+     * @throws PlaneNumberFormatException
+     */
+    public static void checkPlaneNumber(String planeNumber) throws PlaneNumberFormatException {
+        if (planeNumber.length() == 5 && (planeNumber.charAt(0) == 'N' || planeNumber.charAt(0) == 'B')) {
+            for (int i = 1; i < planeNumber.length(); i++) {
+                if (!Character.isDigit(planeNumber.charAt(i)))
+                    throw new PlaneNumberFormatException(planeNumber + " has incorrect format.");
+            }
+        } else
+            throw new PlaneNumberFormatException(planeNumber + " has incorrect format.");
+    }
+
+    /**
+     * check plane type
+     * @param strType
+     * @throws PlaneTypeException
+     */
+    public static void checkPlaneType(String strType) throws PlaneTypeException {
+        for (int i = 0; i < strType.length(); i++) {
+            char ch = strType.charAt(i);
+            if (!(Character.isAlphabetic(ch) || Character.isDigit(ch)))
+                throw new PlaneTypeException(strType + " has incorrect format.");
+        }
+    }
+
+    /**
+     * check plane seat range
+     * @param strSeats
+     * @throws PlaneSeatRangeException
+     */
+    public static void checkPlaneSeat(String strSeats) throws PlaneSeatRangeException {
+        int intSeats = Integer.valueOf(strSeats);
+        if (intSeats < 50 || intSeats > 600)
+            throw new PlaneSeatRangeException(intSeats + " is not in [50, 600].");
+    }
+
+    /**
+     * check plane age format
+     * @param strAge
+     * @throws PlaneAgeFormatException
+     */
+    public static void checkPlaneAge(String strAge) throws PlaneAgeFormatException {
+        double age = Double.valueOf(strAge);
+        if (strAge.indexOf(".") < strAge.length() - 2 || age < 0 || age > 30)
+            throw new PlaneAgeFormatException();
     }
 }
