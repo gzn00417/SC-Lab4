@@ -160,7 +160,7 @@ public class FlightScheduleCollection extends PlanningEntryCollection {
      * @throws SameAirportException
      */
     public static void checkDiffAirport(String departureAirport, String arrivalAirport) throws SameAirportException {
-        if (!departureAirport.equals(arrivalAirport))
+        if (departureAirport.equals(arrivalAirport))
             throw new SameAirportException(departureAirport + " is the same with " + arrivalAirport + " .");
     }
 

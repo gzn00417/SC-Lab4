@@ -137,4 +137,19 @@ public abstract class PlanningEntryCollection {
      * sort planning entries
      */
     public abstract void sortPlanningEntries();
+
+    public void checkDateNumberConflict() {
+        List<PlanningEntry<Resource>> entries = this.getAllPlanningEntries();
+        int n = entries.size();
+        for (int i = 0; i < n - 1; i++) {
+            for (int j = i + 1; j < n; j++) {
+                PlanningEntry<Resource> e1 = entries.get(i), e2 = entries.get(j);
+                if (e1.getResource().equals(e2.getResource())) {
+                    if (((CommonPlanningEntry<Resource>) e1).getPlanningDate()
+                            .isEqual(((CommonPlanningEntry<Resource>) e2).getPlanningDate()))
+                        throw new Exception();
+                }
+            }
+        }
+    }
 }
