@@ -122,7 +122,8 @@ public class FlightScheduleApp {
 			}
 		}
 		bReader.close();
-		// flightScheduleCollection.sortPlanningEntries();
+		flightScheduleCollection.checkDateNumberConflict();
+		flightScheduleCollection.checkTimeGap();
 	}
 
 	/**

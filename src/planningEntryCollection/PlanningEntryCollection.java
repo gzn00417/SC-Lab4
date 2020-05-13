@@ -1,10 +1,12 @@
 package planningEntryCollection;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import exceptions.*;
 import planningEntry.*;
 import resource.*;
 
@@ -138,16 +140,59 @@ public abstract class PlanningEntryCollection {
      */
     public abstract void sortPlanningEntries();
 
-    public void checkDateNumberConflict() {
+    /**
+     * check dates and numbers conflict
+     * @throws SameEntryException
+     */
+    public void checkDateNumberConflict() throws SameEntryException {
         List<PlanningEntry<Resource>> entries = this.getAllPlanningEntries();
         int n = entries.size();
         for (int i = 0; i < n - 1; i++) {
             for (int j = i + 1; j < n; j++) {
-                PlanningEntry<Resource> e1 = entries.get(i), e2 = entries.get(j);
-                if (e1.getResource().equals(e2.getResource())) {
-                    if (((CommonPlanningEntry<Resource>) e1).getPlanningDate()
-                            .isEqual(((CommonPlanningEntry<Resource>) e2).getPlanningDate()))
-                        throw new Exception();
+                if (i != j) {
+                    PlanningEntry<Resource> e1 = entries.get(i), e2 = entries.get(j);
+                    if (e1.getPlanningEntryNumber().equals(e2.getPlanningEntryNumber())) {
+                        if (((CommonPlanningEntry<Resource>) e1).getPlanningDate()
+                                .isEqual(((CommonPlanningEntry<Resource>) e2).getPlanningDate()))
+                            throw new SameEntryException(e1.getPlanningEntryNumber() + " and "
+                                    + e2.getPlanningEntryNumber() + " are the same entries.");
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * check gap between leaving and arrival
+     * @throws HugeTimeGapException
+     */
+    public void checkTimeGap() throws HugeTimeGapException {
+        List<PlanningEntry<Resource>> entries = this.getAllPlanningEntries();
+        int n = entries.size();
+        for (int i = 0; i < n - 1; i++) {
+            FlightSchedule<Resource> e = (FlightSchedule<Resource>) entries.get(i);
+            LocalDateTime t1 = e.getTimeLeaving(), t2 = e.getTimeArrival();
+            if (t1.plusDays(1).isBefore(t2))
+                throw new HugeTimeGapException(t1.toString() + " is to early than " + t2.toString());
+        }
+    }
+
+    /**
+     * check entry information consistent
+     * @throws EntryInconsistentInfoException
+     */
+    public void checkConsistentInfo() throws EntryInconsistentInfoException {
+        List<PlanningEntry<Resource>> entries = this.getAllPlanningEntries();
+        int n = entries.size();
+        for (int i = 0; i < n - 1; i++) {
+            for (int j = i + 1; j < n; j++) {
+                if (i != j) {
+                    PlanningEntry<Resource> e1 = entries.get(i), e2 = entries.get(j);
+                    if (e1.getPlanningEntryNumber().equals(e2.getPlanningEntryNumber())) {
+                        if (!e1.getTimeSlot().equals(e2.getTimeSlot()) || !e1.getLocation().equals(e2.getLocation()))
+                            throw new EntryInconsistentInfoException(e1.getPlanningEntryNumber() + " and "
+                                    + e2.getPlanningEntryNumber() + " is inconsistent.");
+                    }
                 }
             }
         }
