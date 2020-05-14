@@ -124,6 +124,8 @@ public class FlightScheduleApp {
 		bReader.close();
 		flightScheduleCollection.checkDateNumberConflict();
 		flightScheduleCollection.checkTimeGap();
+		flightScheduleCollection.checkEntryConsistentInfo();
+		flightScheduleCollection.checkPlaneConsistentInfo();
 	}
 
 	/**

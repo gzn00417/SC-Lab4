@@ -14,7 +14,7 @@ import resource.*;
 
 public class PlanningEntryCollectionTest {
     @Test
-    public void testFlightScheduleCollection() {
+    public void testFlightScheduleCollection() throws Exception {
         FlightScheduleCollection flightScheduleCollection = new FlightScheduleCollection();
         String input = "Flight:2020-01-16,AA018\n{\nDepartureAirport:Hongkong\nArrivalAirport:Shenyang\nDepatureTime:2020-01-16 22:40\nArrivalTime:2020-01-17 03:51\nPlane:B6967\n{\nType:A340\nSeats:332\nAge:23.7\n}\n}\n";
         FlightSchedule<Resource> flightSchedule = flightScheduleCollection.addPlanningEntry(input);
@@ -39,7 +39,7 @@ public class PlanningEntryCollectionTest {
     }
 
     @Test
-    public void testCommonMethods() {
+    public void testCommonMethods() throws Exception {
         // test getALLLocation()
         FlightScheduleCollection flightScheduleCollection = new FlightScheduleCollection();
         String input1 = "Flight:2020-01-16,AA018\n{\nDepartureAirport:Hongkong\nArrivalAirport:Shenyang\nDepatureTime:2020-01-16 22:40\nArrivalTime:2020-01-17 03:51\nPlane:B6967\n{\nType:A340\nSeats:332\nAge:23.7\n}\n}\n";

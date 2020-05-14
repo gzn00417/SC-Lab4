@@ -235,6 +235,6 @@ public class FlightScheduleCollection extends PlanningEntryCollection {
     public static void checkPlaneAge(String strAge) throws PlaneAgeFormatException {
         double age = Double.valueOf(strAge);
         if (strAge.indexOf(".") < strAge.length() - 2 || age < 0 || age > 30)
-            throw new PlaneAgeFormatException();
+            throw new PlaneAgeFormatException(strAge + " has incorrect format.");
     }
 }

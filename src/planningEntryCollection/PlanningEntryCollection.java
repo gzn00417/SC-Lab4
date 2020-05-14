@@ -152,8 +152,8 @@ public abstract class PlanningEntryCollection {
                 if (i != j) {
                     PlanningEntry<Resource> e1 = entries.get(i), e2 = entries.get(j);
                     if (e1.getPlanningEntryNumber().equals(e2.getPlanningEntryNumber())) {
-                        if (((CommonPlanningEntry<Resource>) e1).getPlanningDate()
-                                .isEqual(((CommonPlanningEntry<Resource>) e2).getPlanningDate()))
+                        if (((FlightSchedule<Resource>) e1).getResource()
+                                .equals(((FlightSchedule<Resource>) e2).getResource()))
                             throw new SameEntryException(e1.getPlanningEntryNumber() + " and "
                                     + e2.getPlanningEntryNumber() + " are the same entries.");
                     }
@@ -181,7 +181,7 @@ public abstract class PlanningEntryCollection {
      * check entry information consistent
      * @throws EntryInconsistentInfoException
      */
-    public void checkConsistentInfo() throws EntryInconsistentInfoException {
+    public void checkEntryConsistentInfo() throws EntryInconsistentInfoException {
         List<PlanningEntry<Resource>> entries = this.getAllPlanningEntries();
         int n = entries.size();
         for (int i = 0; i < n - 1; i++) {
@@ -192,6 +192,44 @@ public abstract class PlanningEntryCollection {
                         if (!e1.getTimeSlot().equals(e2.getTimeSlot()) || !e1.getLocation().equals(e2.getLocation()))
                             throw new EntryInconsistentInfoException(e1.getPlanningEntryNumber() + " and "
                                     + e2.getPlanningEntryNumber() + " is inconsistent.");
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * check plane information consistent
+     * @throws PlaneInconsistentInfoException
+     */
+    public void checkPlaneConsistentInfo() throws PlaneInconsistentInfoException {
+        Set<Resource> planes = this.getAllResource();
+        for (Resource r1 : planes) {
+            for (Resource r2 : planes) {
+                if (r1 != r2) {
+                    Plane p1 = (Plane) r1, p2 = (Plane) r2;
+                    if (p1.getNumber().equals(p2.getNumber()) && !p1.equals(p2))
+                        throw new PlaneInconsistentInfoException(p1.getNumber() + " has inconsistent information.");
+                }
+            }
+        }
+    }
+
+    /**
+     * check same entry in different days
+     * @throws SameEntrySameDayException
+     */
+    public void checkSameEntryDiffDay() throws SameEntrySameDayException {
+        List<PlanningEntry<Resource>> entries = this.getAllPlanningEntries();
+        int n = entries.size();
+        for (int i = 0; i < n - 1; i++) {
+            for (int j = i + 1; j < n; j++) {
+                if (i != j) {
+                    PlanningEntry<Resource> e1 = entries.get(i), e2 = entries.get(j);
+                    if (e1.getPlanningEntryNumber().equals(e2.getPlanningEntryNumber())) {
+                        if (((CommonPlanningEntry<Resource>) e1).getPlanningDate()
+                                .isEqual(((CommonPlanningEntry<Resource>) e2).getPlanningDate()))
+                            throw new SameEntrySameDayException();
                     }
                 }
             }

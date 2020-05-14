@@ -10,7 +10,6 @@ import javax.swing.*;
 import java.awt.*;
 
 import board.*;
-import location.Location;
 import planningEntry.*;
 import planningEntryAPIs.*;
 import planningEntryCollection.*;
