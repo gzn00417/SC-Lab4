@@ -1,11 +1,13 @@
 package planningEntryCollection;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -113,12 +115,44 @@ public class FlightScheduleCollection extends PlanningEntryCollection {
     }
 
     /**
+     * allocate one plan available resource
+     * @param flightSchedule
+     * @param stringInfo the input string array containing resource or whole planning entry
+     * @return the resource allocated
+     * @throws Exception
+     */
+    public Resource allocatePlanningEntry(FlightSchedule<Resource> flightSchedule, String stringInfo) throws Exception {
+        Pattern pattern1 = Pattern.compile(
+                "Flight:(.*?),(.*?)\n\\{\nDepartureAirport:(.*?)\nArrivalAirport:(.*?)\nDepatureTime:(.*?)\nArrivalTime:(.*?)\nPlane:(.*?)\n\\{\nType:(.*?)\nSeats:(.*?)\nAge:(.*?)\n\\}\n\\}\n");
+        Pattern pattern2 = Pattern.compile("Plane:(.*?)\n\\{\nType:(.*?)\nSeats:(.*?)\nAge:(.*?)\n\\}\n");
+        Matcher matcher = pattern1.matcher(stringInfo);
+        if (!matcher.find()) {
+            matcher = pattern2.matcher(stringInfo);
+            if (!matcher.find())
+                return null;
+        }
+        String number = matcher.group(7);
+        checkPlaneNumber(number);
+        String strType = matcher.group(8);
+        checkPlaneType(strType);
+        String strSeats = matcher.group(9);
+        checkPlaneSeat(strSeats);
+        String strAge = matcher.group(10);
+        checkPlaneAge(strAge);
+        Resource plane = Resource.newResourceOfPlane(number, strType, Integer.valueOf(strSeats),
+                Double.valueOf(strAge));
+        this.collectionResource.add(plane);
+        flightSchedule.allocateResource(plane);
+        return plane;
+    }
+
+    /**
      * get the plane of number
      * @param number
      * @return the Plane
      */
     public Resource getPlaneOfNumber(String number) {
-        Set<Resource> allResource = this.getAllResource();
+        List<Resource> allResource = this.getAllResource();
         for (Resource plane : allResource)
             if (((Plane) plane).getNumber().equals(number))
                 return plane;
@@ -236,5 +270,65 @@ public class FlightScheduleCollection extends PlanningEntryCollection {
         double age = Double.valueOf(strAge);
         if (strAge.indexOf(".") < strAge.length() - 2 || age < 0 || age > 30)
             throw new PlaneAgeFormatException(strAge + " has incorrect format.");
+    }
+
+    /**
+    * check dates and numbers conflict
+    * @throws SameEntryException
+    */
+    public void checkDateNumberConflict() throws SameEntryException {
+        List<PlanningEntry<Resource>> entries = this.getAllPlanningEntries();
+        int n = entries.size();
+        for (int i = 0; i < n - 1; i++) {
+            for (int j = i + 1; j < n; j++) {
+                if (i != j) {
+                    FlightSchedule<Resource> e1 = (FlightSchedule<Resource>) entries.get(i),
+                            e2 = (FlightSchedule<Resource>) entries.get(j);
+                    if (e1.getPlanningEntryNumber().equals(e2.getPlanningEntryNumber())) {
+                        if (((Plane) e1.getResource()).equals((Plane) e2.getResource()))
+                            throw new SameEntryException(e1.getPlanningEntryNumber() + " and "
+                                    + e2.getPlanningEntryNumber() + " are the same entries.");
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+    * check gap between leaving and arrival
+    * @throws HugeTimeGapException
+    */
+    public void checkTimeGap() throws HugeTimeGapException {
+        List<PlanningEntry<Resource>> entries = this.getAllPlanningEntries();
+        int n = entries.size();
+        for (int i = 0; i < n; i++) {
+            FlightSchedule<Resource> e = (FlightSchedule<Resource>) entries.get(i);
+            LocalDateTime t1 = e.getTimeLeaving(), t2 = e.getTimeArrival();
+            if (t1.plusDays(1).isBefore(t2))
+                throw new HugeTimeGapException(t1.toString() + " is too early than " + t2.toString());
+        }
+    }
+
+    /**
+     * check entry information consistent
+     * @throws EntryInconsistentInfoException
+     */
+    public void checkEntryConsistentInfo() throws EntryInconsistentInfoException {
+        List<PlanningEntry<Resource>> entries = this.getAllPlanningEntries();
+        int n = entries.size();
+        for (int i = 0; i < n - 1; i++) {
+            for (int j = i + 1; j < n; j++) {
+                if (i != j) {
+                    FlightSchedule<Resource> e1 = (FlightSchedule<Resource>) entries.get(i),
+                            e2 = (FlightSchedule<Resource>) entries.get(j);
+                    if (e1.getPlanningEntryNumber().equals(e2.getPlanningEntryNumber())) {
+                        LocalTime t11 = e1.getTimeLeaving().toLocalTime(), t12 = e1.getTimeArrival().toLocalTime(),
+                                t21 = e2.getTimeLeaving().toLocalTime(), t22 = e2.getTimeArrival().toLocalTime();
+                        if (!(t11.equals(t21) && t12.equals(t22)) || !e1.getLocation().equals(e2.getLocation()))
+                            throw new EntryInconsistentInfoException(e1.getPlanningEntryNumber() + " is inconsistent.");
+                    }
+                }
+            }
+        }
     }
 }

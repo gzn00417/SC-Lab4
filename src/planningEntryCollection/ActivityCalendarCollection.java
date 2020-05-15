@@ -3,9 +3,9 @@ package planningEntryCollection;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.List;
 
 import location.*;
 import planningEntry.*;
@@ -80,7 +80,7 @@ public class ActivityCalendarCollection extends PlanningEntryCollection {
     }
 
     public Resource getDocumentOfName(String docName) {
-        Set<Resource> allResource = this.getAllResource();
+        List<Resource> allResource = this.getAllResource();
         for (Resource document : allResource)
             if (((Document) document).getDocName().equals(docName))
                 return document;

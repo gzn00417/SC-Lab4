@@ -3,6 +3,7 @@ package planningEntryCollection;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -105,7 +106,7 @@ public class TrainScheduleCollection extends PlanningEntryCollection {
      * @return the Plane
      */
     public Resource getPlaneOfNumber(String number) {
-        Set<Resource> allResource = this.getAllResource();
+        List<Resource> allResource = this.getAllResource();
         for (Resource plane : allResource)
             if (((Plane) plane).getNumber().equals(number))
                 return plane;

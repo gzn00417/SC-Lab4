@@ -450,7 +450,7 @@ public class ActivityCalendarApp {
         resourceFrame.add(topPanel);
         // JScrollPane
         String resourcesStrings = "";
-        Set<Resource> allResource = flightScheduleCollection.getAllResource();
+        List<Resource> allResource = flightScheduleCollection.getAllResource();
         List<Resource> allResourceList = new ArrayList<>();
         int i = 0;
         for (Resource plane : allResource) {
@@ -491,7 +491,7 @@ public class ActivityCalendarApp {
         locationFrame.add(topPanel);
         // JScrollPane
         String locationsStrings = "";
-        Set<String> allLocation = flightScheduleCollection.getAllLocation();
+        List<String> allLocation = flightScheduleCollection.getAllLocation();
         List<String> allLocationList = new ArrayList<>();
         int i = 0;
         for (String location : allLocation) {

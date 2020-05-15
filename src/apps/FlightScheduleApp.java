@@ -122,10 +122,6 @@ public class FlightScheduleApp {
 			}
 		}
 		bReader.close();
-		flightScheduleCollection.checkDateNumberConflict();
-		flightScheduleCollection.checkTimeGap();
-		flightScheduleCollection.checkEntryConsistentInfo();
-		flightScheduleCollection.checkPlaneConsistentInfo();
 	}
 
 	/**
@@ -456,7 +452,7 @@ public class FlightScheduleApp {
 		resourceFrame.add(topPanel);
 		// JScrollPane
 		String resourcesStrings = "";
-		Set<Resource> allResource = flightScheduleCollection.getAllResource();
+		List<Resource> allResource = flightScheduleCollection.getAllResource();
 		List<Resource> allResourceList = new ArrayList<>();
 		int i = 0;
 		for (Resource plane : allResource) {
@@ -506,7 +502,7 @@ public class FlightScheduleApp {
 		locationFrame.add(topPanel1);
 		// JScrollPane
 		String locationsStrings = "";
-		Set<String> allLocation = flightScheduleCollection.getAllLocation();
+		List<String> allLocation = flightScheduleCollection.getAllLocation();
 		List<String> allLocationList = new ArrayList<>();
 		int i = 0;
 		for (String location : allLocation) {
