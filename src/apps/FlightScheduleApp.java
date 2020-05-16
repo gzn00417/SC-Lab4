@@ -75,13 +75,7 @@ public class FlightScheduleApp {
 		// operate planning entry
 		JButton operatePlanningEntryButton = new JButton("Operate Planning Entry");
 		mainFrame.add(operatePlanningEntryButton);
-		operatePlanningEntryButton.addActionListener((e) -> {
-			try {
-				operatePlanningEntry();
-			} catch (UnableCancelException e1) {
-				e1.printStackTrace();
-			}
-		});
+		operatePlanningEntryButton.addActionListener((e) -> operatePlanningEntry());
 
 		// APIs
 		JButton apisButton = new JButton("APIs");
@@ -323,11 +317,16 @@ public class FlightScheduleApp {
 		});
 	}
 
+	public static void checkCancelAble(boolean operationFlag, String planningEntryNumber) throws UnableCancelException {
+		if (!operationFlag)
+			throw new UnableCancelException(planningEntryNumber + " is unable to be cancelled.");
+	}
+
 	/**
 	 * operate a planning entry
 	 * start, cancel, block or finish one planning entry
 	 */
-	public static void operatePlanningEntry() throws UnableCancelException {
+	public static void operatePlanningEntry() {
 		// frame
 		JFrame operateFrame = new JFrame("Operate Planning Entry");
 		operateFrame.setLayout(new GridLayout(2, 1));
@@ -364,12 +363,11 @@ public class FlightScheduleApp {
 					break;
 				case "Cancel":
 					operationFlag = flightScheduleCollection.cancelPlanningEntry(planningEntryNumber);
-					if (!operationFlag)
-						try {
-							throw new UnableCancelException();
-						} catch (UnableCancelException e1) {
-							logger.log(Level.WARNING, e1.getMessage(), e1);
-						}
+					try {
+						checkCancelAble(operationFlag, planningEntryNumber);
+					} catch (UnableCancelException e1) {
+						logger.log(Level.WARNING, e1.getMessage(), e1);
+					}
 					break;
 				case "Finish":
 					operationFlag = flightScheduleCollection.finishPlanningEntry(planningEntryNumber);
@@ -498,6 +496,12 @@ public class FlightScheduleApp {
 		});
 	}
 
+	/**
+	 * check location occupied
+	 * @param flightScheduleCollection0
+	 * @param location
+	 * @throws DeleteOccupiedLocationException
+	 */
 	public static void checkLocationOccupied(FlightScheduleCollection flightScheduleCollection0, String location)
 			throws DeleteOccupiedLocationException {
 		List<PlanningEntry<Resource>> planningEntries = flightScheduleCollection0.getAllPlanningEntries();
@@ -508,7 +512,7 @@ public class FlightScheduleApp {
 				if (planningEntry.getState().getState().equals(EntryStateEnum.ALLOCATED)
 						|| planningEntry.getState().getState().equals(EntryStateEnum.BLOCKED)
 						|| planningEntry.getState().getState().equals(EntryStateEnum.RUNNING))
-					throw new DeleteOccupiedLocationException(location + " is occupied");
+					throw new DeleteOccupiedLocationException(location + " is occupied.");
 		}
 	}
 

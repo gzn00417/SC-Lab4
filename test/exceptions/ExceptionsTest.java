@@ -4,7 +4,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import planningEntry.FlightSchedule;
+import apps.*;
+import entryState.EntryStateEnum;
+import planningEntry.*;
 import planningEntryCollection.*;
 import resource.Resource;
 
@@ -22,6 +24,7 @@ public class ExceptionsTest {
         assert false;
     }
     */
+
     /**
      * get one data
      * @param fileName
@@ -196,5 +199,75 @@ public class ExceptionsTest {
         getSeveralData("data/Exceptions/SameEntrySameDayException.txt", flightScheduleCollection);
         assertEquals(2, flightScheduleCollection.getAllPlanningEntries().size());
         flightScheduleCollection.checkSameEntryDiffDay();
+    }
+
+    @Test
+    public void testDeleteAllocatedResourceException() throws Exception {
+        exception.expect(DeleteAllocatedResourceException.class);
+        FlightScheduleCollection flightScheduleCollection = new FlightScheduleCollection();
+        getSeveralData("data/Exceptions/DeleteAllocatedResourceException.txt", flightScheduleCollection);
+        assertEquals(EntryStateEnum.ALLOCATED,
+                flightScheduleCollection.getAllPlanningEntries().get(0).getState().getState());
+        Resource resource = flightScheduleCollection.getAllPlanningEntries().get(0).getResource();
+        exception.expectMessage(resource.toString() + " is allocated.");
+        FlightScheduleApp.checkResourceAllocated(flightScheduleCollection, resource);
+    }
+
+    @Test
+    public void testDeleteOccupiedLocationException() throws Exception {
+        exception.expect(DeleteOccupiedLocationException.class);
+        FlightScheduleCollection flightScheduleCollection = new FlightScheduleCollection();
+        getSeveralData("data/Exceptions/DeleteOccupiedLocationException.txt", flightScheduleCollection);
+        String location = ((FlightSchedule<Resource>) flightScheduleCollection.getAllPlanningEntries().get(0))
+                .getLocationOrigin();
+        assertEquals("Hongkong", location);
+        exception.expectMessage(location + " is occupied.");
+        FlightScheduleApp.checkLocationOccupied(flightScheduleCollection, location);
+    }
+
+    @Test
+    public void testUnableCancelException() throws Exception {
+        exception.expect(UnableCancelException.class);
+        exception.expectMessage("AA018" + " is unable to be cancelled.");
+        FlightScheduleCollection flightScheduleCollection = new FlightScheduleCollection();
+        getSeveralData("data/Exceptions/UnableCancelException.txt", flightScheduleCollection);
+        FlightSchedule<Resource> flightSchedule = (FlightSchedule<Resource>) flightScheduleCollection
+                .getAllPlanningEntries().get(0);
+        assertEquals(EntryStateEnum.ALLOCATED, flightSchedule.getState().getState());
+        assertTrue(flightScheduleCollection.startPlanningEntry("AA018"));
+        boolean operationFlag = flightScheduleCollection.cancelPlanningEntry("AA018");
+        FlightScheduleApp.checkCancelAble(operationFlag, "AA018");
+    }
+
+    @Test
+    public void testResourceSharedException() throws Exception {
+        exception.expect(ResourceSharedException.class);
+        FlightScheduleCollection flightScheduleCollection = new FlightScheduleCollection();
+        String data1 = getOneData("data/Exceptions/ResourceSharedException_0.txt");
+        FlightSchedule<Resource> flightSchedule1 = flightScheduleCollection.addPlanningEntry(data1);
+        flightScheduleCollection.allocatePlanningEntry(flightSchedule1, data1);
+        assertEquals(EntryStateEnum.ALLOCATED, flightSchedule1.getState().getState());
+        String data2 = getOneData("data/Exceptions/ResourceSharedException_1.txt");
+        FlightSchedule<Resource> flightSchedule2 = flightScheduleCollection.addPlanningEntry(data2);
+        assertEquals(EntryStateEnum.WAITING, flightSchedule2.getState().getState());
+        Resource resource = flightScheduleCollection.getPlaneOfNumber("B6967");
+        exception.expectMessage(resource.toString() + " is shared.");
+        FlightScheduleApp.checkResourceShared(flightScheduleCollection, resource);
+    }
+
+    @Test
+    public void testLocationSharedException() throws Exception {
+        exception.expect(ResourceSharedException.class);
+        FlightScheduleCollection flightScheduleCollection = new FlightScheduleCollection();
+        String data1 = getOneData("data/Exceptions/ResourceSharedException_0.txt");
+        FlightSchedule<Resource> flightSchedule1 = flightScheduleCollection.addPlanningEntry(data1);
+        flightScheduleCollection.allocatePlanningEntry(flightSchedule1, data1);
+        assertEquals(EntryStateEnum.ALLOCATED, flightSchedule1.getState().getState());
+        String data2 = getOneData("data/Exceptions/ResourceSharedException_1.txt");
+        FlightSchedule<Resource> flightSchedule2 = flightScheduleCollection.addPlanningEntry(data2);
+        assertEquals(EntryStateEnum.WAITING, flightSchedule2.getState().getState());
+        Resource resource = flightScheduleCollection.getPlaneOfNumber("B6967");
+        exception.expectMessage(resource.toString() + " is shared.");
+        FlightScheduleApp.checkResourceShared(flightScheduleCollection, resource);
     }
 }

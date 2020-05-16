@@ -14,6 +14,7 @@ import planningEntry.*;
 import planningEntryAPIs.*;
 import planningEntryCollection.*;
 import resource.*;
+import exceptions.*;
 
 public class ActivityCalendarApp {
     /**
@@ -385,6 +386,22 @@ public class ActivityCalendarApp {
             JOptionPane.showMessageDialog(apisFrame, prePlanningEntry.getPlanningEntryNumber(), "Finding Result",
                     JOptionPane.PLAIN_MESSAGE);
         });
+    }
+
+    /**
+     * check location modifiable
+     * @param flightScheduleCollection0
+     * @param location
+     * @throws LocationSharedException
+     */
+    public static void checkLocationModifiable(ActivityCalendarCollection activityCalendarCollection0, String location)
+            throws LocationSharedException {
+        List<PlanningEntry<Resource>> planningEntries = activityCalendarCollection0.getAllPlanningEntries();
+        for (PlanningEntry<Resource> planningEntry : planningEntries) {
+            ActivityCalendar<Resource> activityCalendar = (ActivityCalendar<Resource>) planningEntry;
+            if (activityCalendar.getLocation() != null && activityCalendar.getStrLocation().equals(location))
+                throw new LocationSharedException(location + " is shared.");
+        }
     }
 
     public static void modifyLocation() {
