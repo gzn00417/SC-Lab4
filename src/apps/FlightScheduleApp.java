@@ -3,17 +3,20 @@ package apps;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.*;
 
 import java.awt.*;
 
 import board.*;
+import entryState.*;
 import planningEntry.*;
 import planningEntryAPIs.*;
 import planningEntryCollection.*;
 import resource.*;
+import exceptions.*;
 
 public class FlightScheduleApp {
 	/**
@@ -28,6 +31,10 @@ public class FlightScheduleApp {
 	 * flight schedule collection
 	 */
 	private final static FlightScheduleCollection flightScheduleCollection = new FlightScheduleCollection();
+	/**
+	 * logger
+	 */
+	private final static Logger logger = Logger.getLogger("Flight Schedule Log");
 
 	/**
 	 * initialize planning entry
@@ -68,7 +75,13 @@ public class FlightScheduleApp {
 		// operate planning entry
 		JButton operatePlanningEntryButton = new JButton("Operate Planning Entry");
 		mainFrame.add(operatePlanningEntryButton);
-		operatePlanningEntryButton.addActionListener((e) -> operatePlanningEntry());
+		operatePlanningEntryButton.addActionListener((e) -> {
+			try {
+				operatePlanningEntry();
+			} catch (UnableCancelException e1) {
+				e1.printStackTrace();
+			}
+		});
 
 		// APIs
 		JButton apisButton = new JButton("APIs");
@@ -217,6 +230,21 @@ public class FlightScheduleApp {
 	}
 
 	/**
+	 * 
+	 * @param flightScheduleCollection0
+	 * @param resource
+	 * @throws ResourceSharedException
+	 */
+	public static void checkResourceShared(FlightScheduleCollection flightScheduleCollection0, Resource resource)
+			throws ResourceSharedException {
+		List<PlanningEntry<Resource>> planningEntries = flightScheduleCollection0.getAllPlanningEntries();
+		for (PlanningEntry<Resource> planningEntry : planningEntries) {
+			if (planningEntry.getResource() != null && planningEntry.getResource().equals(resource))
+				throw new ResourceSharedException(resource.toString() + " is shared.");
+		}
+	}
+
+	/**
 	 * allocate resource to planning entry
 	 */
 	public static void allocateResource() {
@@ -247,8 +275,17 @@ public class FlightScheduleApp {
 		enterButton.addActionListener((e) -> {
 			String strPlanningEntryNumber = planningEntryNumberText.getText();
 			String strResourceNumber = resourceNumberText.getText();
-			flightScheduleCollection.allocateResource(strPlanningEntryNumber, strResourceNumber);
-			JOptionPane.showMessageDialog(allocateResourceFrame, "Successfully", "Allocate Resource",
+			boolean flag = true;
+			try {
+				checkResourceShared(flightScheduleCollection,
+						flightScheduleCollection.getPlaneOfNumber(strResourceNumber));
+			} catch (ResourceSharedException e1) {
+				logger.log(Level.WARNING, e1.getMessage(), e1);
+				flag = false;
+			}
+			if (flag)
+				flightScheduleCollection.allocateResource(strPlanningEntryNumber, strResourceNumber);
+			JOptionPane.showMessageDialog(allocateResourceFrame, flag ? "Successfully" : "Failed", "Allocate Resource",
 					JOptionPane.PLAIN_MESSAGE);
 			allocateResourceFrame.dispose();
 		});
@@ -290,7 +327,7 @@ public class FlightScheduleApp {
 	 * operate a planning entry
 	 * start, cancel, block or finish one planning entry
 	 */
-	public static void operatePlanningEntry() {
+	public static void operatePlanningEntry() throws UnableCancelException {
 		// frame
 		JFrame operateFrame = new JFrame("Operate Planning Entry");
 		operateFrame.setLayout(new GridLayout(2, 1));
@@ -316,19 +353,26 @@ public class FlightScheduleApp {
 		// action
 		enterButton.addActionListener((e) -> {
 			String strOperation = (String) operateBox.getSelectedItem();
+			String planningEntryNumber = planningEntryNumberText.getText();
 			boolean operationFlag;
 			switch (strOperation) {
 				case "Start":
-					operationFlag = flightScheduleCollection.startPlanningEntry(planningEntryNumberText.getText());
+					operationFlag = flightScheduleCollection.startPlanningEntry(planningEntryNumber);
 					break;
 				case "Block":
-					operationFlag = flightScheduleCollection.blockPlanningEntry(planningEntryNumberText.getText());
+					operationFlag = flightScheduleCollection.blockPlanningEntry(planningEntryNumber);
 					break;
 				case "Cancel":
-					operationFlag = flightScheduleCollection.cancelPlanningEntry(planningEntryNumberText.getText());
+					operationFlag = flightScheduleCollection.cancelPlanningEntry(planningEntryNumber);
+					if (!operationFlag)
+						try {
+							throw new UnableCancelException();
+						} catch (UnableCancelException e1) {
+							logger.log(Level.WARNING, e1.getMessage(), e1);
+						}
 					break;
 				case "Finish":
-					operationFlag = flightScheduleCollection.finishPlanningEntry(planningEntryNumberText.getText());
+					operationFlag = flightScheduleCollection.finishPlanningEntry(planningEntryNumber);
 					break;
 				default:
 					operationFlag = false;
@@ -387,49 +431,23 @@ public class FlightScheduleApp {
 		});
 	}
 
-	/*
-	public static void modifyLocation() {
-		// frame
-		JFrame modifyLocationFrame = new JFrame("Modify Location");
-		modifyLocationFrame.setLayout(new GridLayout(3, 1));
-		modifyLocationFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		modifyLocationFrame.setVisible(true);
-		modifyLocationFrame.setSize(400, 300);
-		// planning entry number
-		JPanel planningEntryNumberPanel = new JPanel();
-		planningEntryNumberPanel.setLayout(new FlowLayout());
-		planningEntryNumberPanel.add(new JLabel("Planning Entry Number:"));
-		JTextField planningEntryNumberText = new JTextField(LINE_WIDTH);
-		planningEntryNumberPanel.add(planningEntryNumberText);
-		modifyLocationFrame.add(planningEntryNumberPanel);
-		// locations
-		JPanel locationsPanel = new JPanel();
-		locationsPanel.setLayout(new FlowLayout());
-		locationsPanel.add(new JLabel("Origin:"));
-		JTextField originText = new JTextField(LINE_WIDTH);
-		locationsPanel.add(originText);
-		locationsPanel.add(new JLabel("Terminal:"));
-		JTextField terminalText = new JTextField(LINE_WIDTH);
-		locationsPanel.add(terminalText);
-		modifyLocationFrame.add(locationsPanel);
-		// enter button
-		JButton enterButton = new JButton("Enter");
-		modifyLocationFrame.add(enterButton);
-		// do
-		enterButton.addActionListener((e) -> {
-			String planningEntryNumber = planningEntryNumberText.getText();
-			String origin = originText.getText();
-			if (origin.isBlank())
-				origin = ((FlightSchedule<Resource>) flightScheduleCollection
-						.getPlanningEntryByStrNumber(planningEntryNumber)).getLocationOrigin();
-			String terminal = terminalText.getText();
-			if (terminal.isBlank())
-				terminal = ((FlightSchedule<Resource>) flightScheduleCollection
-						.getPlanningEntryByStrNumber(planningEntryNumber)).getLocationTerminal();
-			Location newLocation = new Location(origin, terminal);
-		});
+	/**
+	 * check resource allocated
+	 * @param flightScheduleCollection0
+	 * @param resource
+	 * @throws DeleteAllocatedResourceException
+	 */
+	public static void checkResourceAllocated(FlightScheduleCollection flightScheduleCollection0, Resource resource)
+			throws DeleteAllocatedResourceException {
+		List<PlanningEntry<Resource>> planningEntries = flightScheduleCollection0.getAllPlanningEntries();
+		for (PlanningEntry<Resource> planningEntry : planningEntries) {
+			if (planningEntry.getResource().equals(resource))
+				if (planningEntry.getState().getState().equals(EntryStateEnum.ALLOCATED)
+						|| planningEntry.getState().getState().equals(EntryStateEnum.BLOCKED)
+						|| planningEntry.getState().getState().equals(EntryStateEnum.RUNNING))
+					throw new DeleteAllocatedResourceException(resource.toString() + " is allocated.");
+		}
 	}
-	*/
 
 	/**
 	 * delete resource
@@ -466,10 +484,32 @@ public class FlightScheduleApp {
 		// do
 		deleteButton.addActionListener((e) -> {
 			int num = Integer.valueOf(topText.getText());
-			boolean flag = flightScheduleCollection.deleteResource(allResourceList.get(num));
+			Resource deletingResource = allResourceList.get(num);
+			boolean flag = true;
+			try {
+				checkResourceAllocated(flightScheduleCollection, deletingResource);
+			} catch (DeleteAllocatedResourceException e1) {
+				logger.log(Level.WARNING, e1.getMessage(), e1);
+				flag = false;
+			}
+			flag = flag & flightScheduleCollection.deleteResource(deletingResource);
 			JOptionPane.showMessageDialog(resourceFrame, flag ? "Successful" : "Failed", "Deleting Resource",
 					JOptionPane.PLAIN_MESSAGE);
 		});
+	}
+
+	public static void checkLocationOccupied(FlightScheduleCollection flightScheduleCollection0, String location)
+			throws DeleteOccupiedLocationException {
+		List<PlanningEntry<Resource>> planningEntries = flightScheduleCollection0.getAllPlanningEntries();
+		for (PlanningEntry<Resource> planningEntry : planningEntries) {
+			FlightSchedule<Resource> flightSchedule = (FlightSchedule<Resource>) planningEntry;
+			if (flightSchedule.getLocationOrigin().equals(location)
+					|| flightSchedule.getLocationTerminal().equals(location))
+				if (planningEntry.getState().getState().equals(EntryStateEnum.ALLOCATED)
+						|| planningEntry.getState().getState().equals(EntryStateEnum.BLOCKED)
+						|| planningEntry.getState().getState().equals(EntryStateEnum.RUNNING))
+					throw new DeleteOccupiedLocationException(location + " is occupied");
+		}
 	}
 
 	/**
@@ -516,7 +556,15 @@ public class FlightScheduleApp {
 		// do
 		deleteButton.addActionListener((e) -> {
 			int num = Integer.valueOf(topText.getText());
-			boolean flag = flightScheduleCollection.deleteLocation(allLocationList.get(num));
+			String deletingLocation = allLocationList.get(num);
+			boolean flag = true;
+			try {
+				checkLocationOccupied(flightScheduleCollection, deletingLocation);
+			} catch (DeleteOccupiedLocationException e1) {
+				logger.log(Level.WARNING, e1.getMessage(), e1);
+				flag = false;
+			}
+			flag &= flightScheduleCollection.deleteLocation(deletingLocation);
 			JOptionPane.showMessageDialog(locationFrame, flag ? "Successful" : "Failed", "Deleting Location",
 					JOptionPane.PLAIN_MESSAGE);
 		});

@@ -8,7 +8,7 @@ import planningEntry.FlightSchedule;
 import planningEntryCollection.*;
 import resource.Resource;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.io.*;
 
@@ -16,11 +16,12 @@ public class ExceptionsTest {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
+    /*
     @Test(expected = AssertionError.class)
     public void testAssertionsEnabled() {
         assert false;
     }
-
+    */
     /**
      * get one data
      * @param fileName
