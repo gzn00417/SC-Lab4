@@ -35,8 +35,12 @@ public class Location {
      * check Rep
      */
     private void checkRep() {
-        for (String strLocation : locations) {
-            assert (strLocation.length() > 0);
+        for (String strLocation1 : locations) {
+            assert (strLocation1.length() > 0);
+            for (String strLocation2 : locations) {
+                if (strLocation1 != strLocation2)
+                    assert (!strLocation1.equals(strLocation2));
+            }
         }
     }
 

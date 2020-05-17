@@ -47,6 +47,8 @@ public class EntryState {
                 || !this.getStrState().toLowerCase().equals("blocked"));
         if (this.setAvailability(strPlanningEntryType, strNewState.toUpperCase())) {
             this.state = EntryStateEnum.valueOf(strNewState.toUpperCase());
+            assert (strPlanningEntryType.toLowerCase().contains("train")
+                    || !this.getStrState().toLowerCase().equals("blocked"));
             return true;
         }
         return false;

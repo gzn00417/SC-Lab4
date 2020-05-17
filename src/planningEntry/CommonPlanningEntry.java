@@ -32,22 +32,30 @@ public abstract class CommonPlanningEntry<R> implements PlanningEntry<R> {
 
     @Override
     public Boolean start() {
-        return this.state.setNewState(strPlanningEntryType, "Running");
+        boolean flag = this.state.setNewState(strPlanningEntryType, "Running");
+        assert (this.state != null && this.state.getState() != null);
+        return flag;
     }
 
     @Override
     public Boolean block() {
-        return this.state.setNewState(strPlanningEntryType, "Blocked");
+        boolean flag = this.state.setNewState(strPlanningEntryType, "Blocked");
+        assert (this.state != null && this.state.getState() != null);
+        return flag;
     }
 
     @Override
     public Boolean cancel() {
-        return this.state.setNewState(strPlanningEntryType, "Cancelled");
+        boolean flag = this.state.setNewState(strPlanningEntryType, "Cancelled");
+        assert (this.state != null && this.state.getState() != null);
+        return flag;
     }
 
     @Override
     public Boolean finish() {
-        return this.state.setNewState(strPlanningEntryType, "Ended");
+        boolean flag = this.state.setNewState(strPlanningEntryType, "Ended");
+        assert (this.state != null && this.state.getState() != null);
+        return flag;
     }
 
     @Override

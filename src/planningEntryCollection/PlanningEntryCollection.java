@@ -1,11 +1,8 @@
 package planningEntryCollection;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-import entryState.EntryState;
 import exceptions.*;
 import planningEntry.*;
 import resource.*;
@@ -38,6 +35,7 @@ public abstract class PlanningEntryCollection {
      * @return the planning entry
      */
     public PlanningEntry<Resource> getPlanningEntryByStrNumber(String planningEntryNumber) {
+        assert (!planningEntryNumber.isBlank());
         for (PlanningEntry<Resource> planningEntry : planningEntries)
             if (planningEntry.getPlanningEntryNumber().equals(planningEntryNumber))
                 return planningEntry;

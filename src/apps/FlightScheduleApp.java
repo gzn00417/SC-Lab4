@@ -120,11 +120,31 @@ public class FlightScheduleApp {
 			stringInfo.append(line + "\n");
 			cntLine++;
 			if (cntLine % INPUT_ROWS_PER_UNIT == 0) {
-				FlightSchedule<Resource> flightSchedule = flightScheduleCollection
-						.addPlanningEntry(stringInfo.toString());
+				FlightSchedule<Resource> flightSchedule = null;
+				try {
+					flightSchedule = flightScheduleCollection.addPlanningEntry(stringInfo.toString());
+				} catch (DataPatternException e) {
+					break;
+				} catch (EntryNumberFormatException e) {
+					break;
+				} catch (SameAirportException e) {
+					break;
+				} catch (TimeOrderException e) {
+					break;
+				}
 				if (flightSchedule != null)
-					flightScheduleCollection.allocatePlanningEntry(flightSchedule.getPlanningEntryNumber(),
-							stringInfo.toString());
+					try {
+						flightScheduleCollection.allocatePlanningEntry(flightSchedule.getPlanningEntryNumber(),
+								stringInfo.toString());
+					} catch (PlaneNumberFormatException e) {
+						break;
+					} catch (PlaneTypeException e) {
+						break;
+					} catch (PlaneSeatRangeException e) {
+						break;
+					} catch (PlaneAgeFormatException e) {
+						break;
+					}
 				stringInfo = new StringBuilder("");
 			}
 		}

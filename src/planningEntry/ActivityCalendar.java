@@ -55,6 +55,7 @@ public class ActivityCalendar<R> extends CommonPlanningEntry<R> {
      * @return true if the resource is set and state is ALLOCATED
      */
     public Boolean allocateResource(R resource, int intResourceNumber) {
+        assert (resource != null && intResourceNumber > 0);
         super.resource = resource;
         this.intResourceNumber = intResourceNumber;
         return this.state.setNewState(strPlanningEntryType, "Allocated");

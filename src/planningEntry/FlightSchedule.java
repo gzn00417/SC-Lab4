@@ -38,6 +38,15 @@ public class FlightSchedule<R> extends CommonPlanningEntry<R> {
     public FlightSchedule(Location location, TimeSlot timeSlot, String planningEntryNumber) {
         super(location, timeSlot, planningEntryNumber);
         this.strPlanningEntryType = "FlightSchedule";
+        checkRep();
+    }
+
+    private void checkRep() {
+        assert (strPlanningEntryType.equals("FlightSchedule"));
+        assert (location != null);
+        assert (timeSlot != null);
+        assert (state != null);
+        assert (resource != null);
     }
 
     /**
@@ -47,6 +56,7 @@ public class FlightSchedule<R> extends CommonPlanningEntry<R> {
      * @return true if the resource is set and state is ALLOCATED
      */
     public Boolean allocateResource(R resource) {
+        assert (resource != null);
         super.resource = resource;
         return this.state.setNewState(strPlanningEntryType, "Allocated");
     }

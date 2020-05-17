@@ -2,6 +2,9 @@ package resource;
 
 import java.util.Objects;
 
+import exceptions.*;
+import planningEntryCollection.FlightScheduleCollection;
+
 /**
  * immutable object
  * a plane containing number, type, seats, age
@@ -38,6 +41,33 @@ public class Plane implements Resource {
         this.strType = strType;
         this.intSeats = intSeats;
         this.age = age;
+        checkRep();
+    }
+
+    /**
+     * check Rep
+     */
+    private void checkRep() {
+        try {
+            FlightScheduleCollection.checkPlaneNumber(number);
+        } catch (PlaneNumberFormatException e) {
+            assert false;
+        }
+        try {
+            FlightScheduleCollection.checkPlaneType(strType);
+        } catch (PlaneTypeException e) {
+            assert false;
+        }
+        try {
+            FlightScheduleCollection.checkPlaneSeat(String.valueOf(intSeats));
+        } catch (PlaneSeatRangeException e) {
+            assert false;
+        }
+        try {
+            FlightScheduleCollection.checkPlaneAge(Double.toString(age));
+        } catch (PlaneAgeFormatException e) {
+            assert false;
+        }
     }
 
     /**
