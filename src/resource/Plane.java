@@ -48,6 +48,7 @@ public class Plane implements Resource {
      * check Rep
      */
     private void checkRep() {
+	/*
         try {
             FlightScheduleCollection.checkPlaneNumber(number);
         } catch (PlaneNumberFormatException e) {
@@ -68,6 +69,7 @@ public class Plane implements Resource {
         } catch (PlaneAgeFormatException e) {
             assert false;
         }
+        */
     }
 
     /**

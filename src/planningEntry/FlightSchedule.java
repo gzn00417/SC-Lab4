@@ -46,7 +46,6 @@ public class FlightSchedule<R> extends CommonPlanningEntry<R> {
         assert (location != null);
         assert (timeSlot != null);
         assert (state != null);
-        assert (resource != null);
     }
 
     /**

@@ -48,7 +48,7 @@ public class PlanningEntryCollectionTest {
         FlightSchedule<Resource> flightSchedule1 = flightScheduleCollection.addPlanningEntry(input1);
         FlightSchedule<Resource> flightSchedule2 = flightScheduleCollection.addPlanningEntry(input2);
         FlightSchedule<Resource> flightSchedule3 = flightScheduleCollection.addPlanningEntry(input3);
-        Set<String> allLocationSet = new HashSet<String>() {
+        List<String> allLocationList = new ArrayList<String>() {
             private static final long serialVersionUID = 1L;
             {
                 add("Hongkong");
@@ -58,7 +58,7 @@ public class PlanningEntryCollectionTest {
                 add("Macau");
             }
         };
-        assertEquals(allLocationSet, flightScheduleCollection.getAllLocation());
+        assertEquals(Set.copyOf(allLocationList), Set.copyOf(flightScheduleCollection.getAllLocation()));
         List<PlanningEntry<Resource>> planningEntryList = new ArrayList<PlanningEntry<Resource>>() {
             private static final long serialVersionUID = 1L;
             {
