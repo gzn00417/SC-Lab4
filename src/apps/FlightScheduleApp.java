@@ -3,8 +3,8 @@ package apps;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Locale;
+import java.util.logging.*;
 
 import javax.swing.*;
 
@@ -43,13 +43,22 @@ public class FlightScheduleApp {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
-		readFile("data/FlightSchedule/FlightSchedule_1.txt");
+		// init log
+		Locale.setDefault(new Locale("en", "EN"));
+		logger.setLevel(Level.INFO);
+		FileHandler fileHandler = new FileHandler("log/FlightScheduleLog0.txt", true);
+		Formatter formatter = new SimpleFormatter();
+		fileHandler.setFormatter(formatter); // simple or xml
+		logger.addHandler(fileHandler);
+		// read
+		readFile("data/FlightSchedule/FlightSchedule_5.txt");
 		// main
 		JFrame mainFrame = new JFrame("Flight Schedule");
 		mainFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		mainFrame.setLayout(new GridLayout(3, 3, 10, 5));
 		mainFrame.setVisible(true);
 		mainFrame.setSize(800, 300);
+
 		// visualization
 		JButton visualizeButton = new JButton("Visualize");
 		mainFrame.add(visualizeButton);
@@ -110,6 +119,7 @@ public class FlightScheduleApp {
 	 * @throws Exception
 	 */
 	public static void readFile(String strFile) throws Exception {
+		logger.log(Level.INFO, "Read File.");
 		BufferedReader bReader = new BufferedReader(new FileReader(new File(strFile)));
 		String line = "";
 		int cntLine = 0;
@@ -124,12 +134,16 @@ public class FlightScheduleApp {
 				try {
 					flightSchedule = flightScheduleCollection.addPlanningEntry(stringInfo.toString());
 				} catch (DataPatternException e) {
+					logger.log(Level.SEVERE, e.getMessage(), e);
 					break;
 				} catch (EntryNumberFormatException e) {
+					logger.log(Level.WARNING, e.getMessage(), e);
 					break;
 				} catch (SameAirportException e) {
+					logger.log(Level.WARNING, e.getMessage(), e);
 					break;
 				} catch (TimeOrderException e) {
+					logger.log(Level.WARNING, e.getMessage(), e);
 					break;
 				}
 				if (flightSchedule != null)
@@ -137,17 +151,22 @@ public class FlightScheduleApp {
 						flightScheduleCollection.allocatePlanningEntry(flightSchedule.getPlanningEntryNumber(),
 								stringInfo.toString());
 					} catch (PlaneNumberFormatException e) {
+						logger.log(Level.WARNING, e.getMessage(), e);
 						break;
 					} catch (PlaneTypeException e) {
+						logger.log(Level.WARNING, e.getMessage(), e);
 						break;
 					} catch (PlaneSeatRangeException e) {
+						logger.log(Level.WARNING, e.getMessage(), e);
 						break;
 					} catch (PlaneAgeFormatException e) {
+						logger.log(Level.WARNING, e.getMessage(), e);
 						break;
 					}
 				stringInfo = new StringBuilder("");
 			}
 		}
+		logger.info("Success.");
 		bReader.close();
 	}
 
@@ -155,9 +174,10 @@ public class FlightScheduleApp {
 	 * visualization application
 	 */
 	public static void visualization() {
+		logger.log(Level.INFO, "Visualization.");
 		// frame
 		JFrame visualizeOptionFrame = new JFrame("Visualization");
-		visualizeOptionFrame.setLayout(new GridLayout(3, 1));
+		visualizeOptionFrame.setLayout(new GridLayout(4, 1));
 		visualizeOptionFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		visualizeOptionFrame.setVisible(true);
 		visualizeOptionFrame.setSize(500, 200);
@@ -186,6 +206,12 @@ public class FlightScheduleApp {
 		JButton leavingButton = new JButton("Show Leaving Flights");
 		visualizeLeavingPanel.add(leavingButton);
 		visualizeOptionFrame.add(visualizeLeavingPanel);
+		// leaving
+		JPanel visualizeLogPanel = new JPanel();
+		visualizeLogPanel.setLayout(new FlowLayout());
+		JButton logButton = new JButton("Show Logs");
+		visualizeLogPanel.add(logButton);
+		visualizeOptionFrame.add(visualizeLogPanel);
 		// button
 		FlightBoard board = new FlightBoard(flightScheduleCollection);
 		arrivalButton.addActionListener((e_) -> {
@@ -198,12 +224,21 @@ public class FlightScheduleApp {
 			String strAirport = leavingAirportText.getText();
 			board.visualize(strCurrentTime, strAirport, FlightBoard.LEAVING);
 		});
+		logButton.addActionListener((e_) -> {
+			try {
+				board.showLog(null, "", "");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		});
+		logger.info("Success.");
 	}
 
 	/**
 	 * add planning entry application
 	 */
 	public static void addPlanningEntry() {
+		logger.log(Level.INFO, "Add Planning Entry.");
 		// frame
 		JFrame addPlanningEntryFrame = new JFrame("Add Planning Entry");
 		addPlanningEntryFrame.setLayout(new GridLayout(6, 1));
@@ -240,6 +275,7 @@ public class FlightScheduleApp {
 			JOptionPane.showMessageDialog(addPlanningEntryFrame, "Successfully", "Add Planning Entry",
 					JOptionPane.PLAIN_MESSAGE);
 			addPlanningEntryFrame.dispose();
+			logger.info("Success.");
 		});
 	}
 
@@ -262,6 +298,7 @@ public class FlightScheduleApp {
 	 * allocate resource to planning entry
 	 */
 	public static void allocateResource() {
+		logger.log(Level.INFO, "Allocate Resource.");
 		// frame
 		JFrame allocateResourceFrame = new JFrame("Allocate Plane");
 		allocateResourceFrame.setLayout(new GridLayout(3, 1));
@@ -302,6 +339,7 @@ public class FlightScheduleApp {
 			JOptionPane.showMessageDialog(allocateResourceFrame, flag ? "Successfully" : "Failed", "Allocate Resource",
 					JOptionPane.PLAIN_MESSAGE);
 			allocateResourceFrame.dispose();
+			logger.info(flag ? "Success." : "Failed.");
 		});
 	}
 
@@ -309,8 +347,9 @@ public class FlightScheduleApp {
 	 * ask one planning entry application
 	 */
 	public static void askState() {
+		logger.log(Level.INFO, "Ask State.");
 		// frame
-		JFrame askStateFrame = new JFrame("Ask State");
+		JFrame askStateFrame = new JFrame("Ask State.");
 		askStateFrame.setLayout(new GridLayout(1, 1));
 		askStateFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		askStateFrame.setVisible(true);
@@ -334,6 +373,7 @@ public class FlightScheduleApp {
 					"The State of " + strPlanningEntryNumber + " is " + strState + ".", "Ask State",
 					JOptionPane.PLAIN_MESSAGE);
 			askStateFrame.dispose();
+			logger.info("Success.");
 		});
 	}
 
@@ -376,12 +416,15 @@ public class FlightScheduleApp {
 			boolean operationFlag;
 			switch (strOperation) {
 				case "Start":
+					logger.log(Level.INFO, "Start Planning Entry.");
 					operationFlag = flightScheduleCollection.startPlanningEntry(planningEntryNumber);
 					break;
 				case "Block":
+					logger.log(Level.INFO, "Block Planning Entry.");
 					operationFlag = flightScheduleCollection.blockPlanningEntry(planningEntryNumber);
 					break;
 				case "Cancel":
+					logger.log(Level.INFO, "Cancel Planning Entry.");
 					operationFlag = flightScheduleCollection.cancelPlanningEntry(planningEntryNumber);
 					try {
 						checkCancelAble(operationFlag, planningEntryNumber);
@@ -390,13 +433,16 @@ public class FlightScheduleApp {
 					}
 					break;
 				case "Finish":
+					logger.log(Level.INFO, "Finish Planning Entry.");
 					operationFlag = flightScheduleCollection.finishPlanningEntry(planningEntryNumber);
 					break;
 				default:
+					logger.info("Failed.");
 					operationFlag = false;
 			}
 			JOptionPane.showMessageDialog(operateFrame, operationFlag ? "Successfully" : "Failed", "Operation State",
 					JOptionPane.PLAIN_MESSAGE);
+			logger.info(operationFlag ? "Success." : "Failed.");
 		});
 	}
 
@@ -427,18 +473,23 @@ public class FlightScheduleApp {
 		apisFrame.add(findPreEntryPanel);
 		// do
 		checkLocationConflictButton.addActionListener((e) -> {
+			logger.log(Level.INFO, "Check Location Conflict.");
 			boolean flag = (new PlanningEntryAPIsFirst())
 					.checkLocationConflict(flightScheduleCollection.getAllPlanningEntries());
 			JOptionPane.showMessageDialog(apisFrame, flag ? "Conflict" : "No Conflict", "Checking Result",
 					JOptionPane.PLAIN_MESSAGE);
+			logger.info("Success.");
 		});
 		checkResourceConflictButton.addActionListener((e) -> {
+			logger.log(Level.INFO, "Check Resource Conflict.");
 			boolean flag = PlanningEntryAPIs
 					.checkResourceExclusiveConflict(flightScheduleCollection.getAllPlanningEntries());
 			JOptionPane.showMessageDialog(apisFrame, flag ? "Conflict" : "No Conflict", "Checking Result",
 					JOptionPane.PLAIN_MESSAGE);
+			logger.info("Success.");
 		});
 		findPreEntryButton.addActionListener((e) -> {
+			logger.log(Level.INFO, "Find Pre Entry.");
 			String strPlanningEntryNumber = planningEntryNumberText.getText();
 			PlanningEntry<Resource> flightSchedule = flightScheduleCollection
 					.getPlanningEntryByStrNumber(strPlanningEntryNumber);
@@ -446,6 +497,7 @@ public class FlightScheduleApp {
 					flightSchedule.getResource(), flightSchedule, flightScheduleCollection.getAllPlanningEntries());
 			JOptionPane.showMessageDialog(apisFrame, prePlanningEntry.getPlanningEntryNumber(), "Finding Result",
 					JOptionPane.PLAIN_MESSAGE);
+			logger.info("Success.");
 		});
 	}
 
@@ -471,6 +523,7 @@ public class FlightScheduleApp {
 	 * delete resource
 	 */
 	public static void manageResource() {
+		logger.log(Level.INFO, "Manage Resource.");
 		// frame
 		JFrame resourceFrame = new JFrame("Manage Resource");
 		resourceFrame.setLayout(new GridLayout(2, 1));
@@ -513,6 +566,7 @@ public class FlightScheduleApp {
 			flag = flag & flightScheduleCollection.deleteResource(deletingResource);
 			JOptionPane.showMessageDialog(resourceFrame, flag ? "Successful" : "Failed", "Deleting Resource",
 					JOptionPane.PLAIN_MESSAGE);
+			logger.info(flag ? "Success." : "Failed.");
 		});
 	}
 
@@ -540,6 +594,7 @@ public class FlightScheduleApp {
 	 * delete location
 	 */
 	public static void manageLocation() {
+		logger.log(Level.INFO, "Manage Location.");
 		// frame
 		JFrame locationFrame = new JFrame("Manage Location");
 		locationFrame.setLayout(new GridLayout(3, 1));
@@ -591,6 +646,7 @@ public class FlightScheduleApp {
 			flag &= flightScheduleCollection.deleteLocation(deletingLocation);
 			JOptionPane.showMessageDialog(locationFrame, flag ? "Successful" : "Failed", "Deleting Location",
 					JOptionPane.PLAIN_MESSAGE);
+			logger.info(flag ? "Success." : "Failed.");
 		});
 	}
 
@@ -598,6 +654,7 @@ public class FlightScheduleApp {
 	 * 
 	 */
 	public static void oneResourceEntries() {
+		logger.log(Level.INFO, "One Resource Entries.");
 		// frame
 		JFrame oneResourceEntriesFrame = new JFrame("One Resource Entries");
 		oneResourceEntriesFrame.setLayout(new GridLayout(2, 1));
@@ -619,11 +676,14 @@ public class FlightScheduleApp {
 		enterButton.addActionListener((e) -> {
 			String resourceNumber = resourceNumberText.getText();
 			Resource plane = flightScheduleCollection.getPlaneOfNumber(resourceNumber);
-			if (plane == null)
+			if (plane == null) {
 				JOptionPane.showConfirmDialog(oneResourceEntriesFrame, "Not Found " + resourceNumber, "Error",
 						JOptionPane.WARNING_MESSAGE);
-			else
+				logger.info("Failed.");
+			} else {
 				board.showEntries(plane);
+				logger.info("Success.");
+			}
 		});
 	}
 }

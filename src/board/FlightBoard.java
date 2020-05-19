@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.io.*;
 
 import planningEntry.*;
 import planningEntryCollection.*;
@@ -22,6 +25,10 @@ public class FlightBoard extends Board {
      * visualization label of leaving
      */
     public static final int LEAVING = -1;
+    /**
+     * 
+     */
+    public static final String INFO = "INFO", WARNING = "WARNING", SEVERE = "SEVERE";
 
     public FlightBoard(PlanningEntryCollection planningEntryCollection) {
         super(planningEntryCollection);
@@ -107,5 +114,64 @@ public class FlightBoard extends Board {
             vData.add((Vector<?>) vRow.clone());
         }
         super.makeTable(vData, vName, "Entries");
+    }
+
+    /**
+     * show logs
+     * @param askedTime
+     * @param logType
+     * @param appType
+     * @throws IOException
+     */
+    public void showLog(String askedTime, String logType, String appType) throws IOException {
+        long WITHIN_MINUTE = 1;
+        LocalDateTime askingTime = null;
+        if (!askedTime.isBlank()) {
+            askingTime = LocalDateTime.parse(askedTime, DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm"));
+        }
+        Vector<Vector<?>> vData = new Vector<>();
+        Vector<String> vName = new Vector<>();
+        String[] columnsNames = new String[] { "Time", "Log Type", "AppType", "Action", "Message" };
+        for (String name : columnsNames)
+            vName.add(name);
+        BufferedReader bReader = new BufferedReader(new FileReader(new File("log/FlightScheduleLog.txt")));
+        String line = "";
+        Pattern pattern1 = Pattern.compile("(.*?) apps\\.(.*?)App (.*?)\\.");
+        Pattern pattern2 = Pattern.compile("([A-Z]*?): (.*?)\\.+");
+        while ((line = bReader.readLine()) != null) {
+            if (line.isBlank())
+                break;
+            Matcher matcher1 = pattern1.matcher(line);
+            if (!matcher1.find())
+                break;
+            line = bReader.readLine();
+            Matcher matcher2 = pattern2.matcher(line);
+            if (!matcher2.find())
+                break;
+            String timeString = matcher1.group(1);
+            String logType1 = matcher2.group(1);
+            String appType1 = matcher1.group(2);
+            String action = matcher1.group(3);
+            String message = matcher2.group(2);
+            LocalDateTime timeFormatted = LocalDateTime.parse(timeString,
+                    DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm:ss a"));
+            System.out.println(timeFormatted.toString());
+            if (askingTime == null || (askingTime.plusMinutes(WITHIN_MINUTE).isAfter(timeFormatted)
+                    && askingTime.minusMinutes(WITHIN_MINUTE).isBefore(timeFormatted))) {
+                if (logType.isBlank() || logType.equals(logType1)) {
+                    if (appType.isBlank() || appType.equals(appType1)) {
+                        Vector<String> vRow = new Vector<>();
+                        vRow.add(timeString);
+                        vRow.add(logType1);
+                        vRow.add(appType1);
+                        vRow.add(action);
+                        vRow.add(message);
+                        vData.add((Vector<?>) vRow.clone());
+                    }
+                }
+            }
+        }
+        bReader.close();
+        super.makeTable(vData, vName, "Log");
     }
 }

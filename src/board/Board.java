@@ -47,7 +47,7 @@ public abstract class Board {
         table.setModel(dataModel);
         JScrollPane scrollPane = new JScrollPane(table);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-        table.getColumn("").setPreferredWidth(0);
+        // table.getColumn("").setPreferredWidth(0);
         DefaultTableCellRenderer r = new DefaultTableCellRenderer();
         r.setHorizontalAlignment(JLabel.CENTER);
         table.setDefaultRenderer(Object.class, r);
