@@ -5,6 +5,11 @@ import static org.junit.Assert.*;
 import org.junit.*;
 
 public class ResourceTest {
+    /*
+     * Test strategy
+     * New 3 types of Resource with concrete information
+     * check the consistency
+     */
     @Test
     public void testPlane() {
         Plane plane = Resource.newResourceOfPlane("AA01", "737", 1000, 3.3);

@@ -15,6 +15,12 @@ import static org.junit.Assert.*;
 import java.io.*;
 
 public class ExceptionsTest {
+    /*
+     * Test strategy
+     * Use @Rule to get expected exception.
+     * In every testing cases, pre expect exception types and message.
+     * Use checking method and loading wrong data to produce exception.
+     */
     @Rule
     public ExpectedException exception = ExpectedException.none();
 

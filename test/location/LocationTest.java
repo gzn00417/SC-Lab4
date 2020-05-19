@@ -7,6 +7,10 @@ import java.util.Arrays;
 import org.junit.*;
 
 public class LocationTest {
+    /*
+     * Test strategy
+     * new several locations and get them checked
+     */
     @Test
     public void testLocation() {
         String[] locations = new String[] { "Harbin", "ChangChun", "Shenyang", "Dalian" };

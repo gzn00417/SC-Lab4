@@ -15,6 +15,21 @@ import java.util.Arrays;
 import java.util.List;
 
 public class PlanningEntryAPIsTest {
+        /*
+         * Test strategy
+         * 
+         * Location Conflict:
+         * Add entries from without conflict to with conflict.
+         * call method when they're added.
+         * 
+         * Resource conflict:
+         * Add entries from without conflict to with conflict.
+         * call method when they're added.
+         * 
+         * Find Pre Entry:
+         * Add entries from non-pre-entry to has it, and to new pre-entry.
+         * call method when they're added, and update the new entry closer to the asking.
+         */
         @Test
         public void testCheckLocationConflictWithFirst() {
                 List<PlanningEntry<Resource>> entries = new ArrayList<>();

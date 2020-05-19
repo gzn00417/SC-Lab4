@@ -7,6 +7,10 @@ import java.util.Arrays;
 import org.junit.*;
 
 public class TimeSlotTest {
+    /*
+     * Test strategy
+     * test time slot used for all types of planning entry
+     */
     @Test
     public void testTimeSlotOfFlightSchedule() {
         String[] timeSlotStrings = new String[] { "2020-01-01 10:10", "2020-01-01 12:12" };

@@ -5,6 +5,11 @@ import static org.junit.Assert.*;
 import org.junit.*;
 
 public class EntryStateTest {
+    /*
+     * Test Strategy
+     * Choose one planning entry of one App.
+     * Test all paths possible whether legal or not.
+     */
     @Test
     public void testEntryState() {
         EntryState entryState = new EntryState("Waiting");

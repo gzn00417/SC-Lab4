@@ -2,7 +2,6 @@ package planningEntryCollection;
 
 import static org.junit.Assert.*;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.ArrayList;
@@ -13,6 +12,11 @@ import planningEntry.*;
 import resource.*;
 
 public class PlanningEntryCollectionTest {
+    /*
+     * Test strategy
+     * Produce text for input and check the information consistency
+     * Call methods and compare with true answers
+     */
     @Test
     public void testFlightScheduleCollection() throws Exception {
         FlightScheduleCollection flightScheduleCollection = new FlightScheduleCollection();
@@ -26,16 +30,6 @@ public class PlanningEntryCollectionTest {
         assertEquals(new Plane("B6967", "A340", 332, 23.7),
                 flightScheduleCollection.allocatePlanningEntry("AA018", input));
         assertEquals("2020-01-16", flightSchedule.getPlanningDate().toString());
-    }
-
-    @Test
-    public void testTrainScheduleCollection() {
-
-    }
-
-    @Test
-    public void testActivityCalendarCollection() {
-
     }
 
     @Test
