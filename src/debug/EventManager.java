@@ -55,17 +55,18 @@ public class EventManager {
 	 */
 	public static int book(int day, int start, int end) {
 		if ((day >= 1 && day <= 365 && start >= 0 && start < 24 && end > 0 && end <= 24 && start < end)) {
-			for (int i = start; i < end; i++) {
-				int index = day * GAP + i;
-				if (temp.containsKey(index))
-					temp.put(index, temp.get(index) + 1);
-				else
-					temp.put(index, 1);
-			}
+			if (temp.containsKey(start + day * GAP))
+				temp.put(start + day * GAP, temp.get(start + day * GAP) + 1);
+			else
+				temp.put(start + day * GAP, 1);
+			if (temp.containsKey(end + day * GAP))
+				temp.put(end + day * GAP, temp.get(end + day * GAP) - 1);
+			else
+				temp.put(end + day * GAP, -1);
 		}
 		int active = 0, ans = 0;
 		for (int d : temp.values()) {
-			active = d;
+			active += d;
 			if (active > ans)
 				ans = active;
 		}
